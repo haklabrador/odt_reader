@@ -16,10 +16,10 @@ def get_text(odtfile):
 
     for el1 in root.findall('{urn:oasis:names:tc:opendocument:xmlns:office:1.0}body'):
         for el2 in el1.findall('{urn:oasis:names:tc:opendocument:xmlns:office:1.0}text'):
-            for el3 in el2.findall('{urn:oasis:names:tc:opendocument:xmlns:text:1.0}p'):
+            for el3 in el2.iter():
                 #print 'el3:', el3.text
                 if el3.text:
-                    text += el3.text
+                    text += el3.text + '\n'
 
     return text
 
