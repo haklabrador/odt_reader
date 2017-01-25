@@ -1,7 +1,10 @@
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <zip.h>
+
+#include "ezxml/ezxml.h"
 
 #include "odt.h"
 
@@ -31,7 +34,8 @@ int odt_get_creation_date(ODT* self)
 
 char* odt_get_text(ODT* self)
 {
-    const char *name = "meta.xml";
+    const char *name = "content.xml";
+    
     zip_stat_t st;
     zip_stat_init(&st);
     zip_stat(self->z, name, 0, &st);
@@ -44,6 +48,27 @@ char* odt_get_text(ODT* self)
 
     contents[st.size] = 0;
 
-    return contents;
+    char* text = strdup("");
+
+    ezxml_t doc = ezxml_parse_str(contents, strlen(contents));
+
+    for (ezxml_t el1 = ezxml_child(doc, "office:body"); el1; el1 = el1->next) {
+      for (ezxml_t el2 = ezxml_child(el1, "office:text"); el2; el2 = el2->next) {
+	for (ezxml_t el3 = ezxml_child(el2, "text:p"); el3; el3 = el3->next) {
+	  //printf("txt: %s\n", el3->txt);
+	  char* s = malloc(strlen(text) + strlen(el3->txt));
+	  strcpy(s, text);
+	  strcat(s, el3->txt);
+	  free(text);
+	  text = s;
+	}
+      }
+    }
+
+    ezxml_free(doc);
+    
+    free(contents);
+
+    return text;
 }
 
